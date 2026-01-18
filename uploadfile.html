@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件上传</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .upload-container {
+            background: white;
+            border-radius: 12px;
+            padding: 48px;
+            max-width: 500px;
+            width: 100%;
+            border: 1px solid #e5e7eb;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #111827;
+            margin-bottom: 32px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 48px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fafafa;
+        }
+        
+        .upload-area:hover {
+            border-color: #9ca3af;
+            background: #f5f5f5;
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.6;
+        }
+        
+        .upload-text {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        .file-info {
+            margin-top: 24px;
+            padding: 16px;
+            background: #f9fafb;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .file-name {
+            font-weight: 500;
+            color: #111827;
+            margin-bottom: 4px;
+            word-break: break-all;
+            font-size: 14px;
+        }
+        
+        .file-size {
+            color: #6b7280;
+            font-size: 13px;
+        }
+        
+        .input-group {
+            margin-top: 16px;
+            display: none;
+        }
+        
+        .input-group label {
+            display: block;
+            color: #374151;
+            font-size: 13px;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        
+        .input-group select,
+        .input-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            color: #111827;
+        }
+        
+        .input-group select:focus,
+        .input-group input:focus {
+            outline: none;
+            border-color: #9ca3af;
+        }
+        
+        .upload-btn {
+            width: 100%;
+            padding: 12px;
+            background: #111827;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 24px;
+            transition: all 0.2s;
+            display: none;
+        }
+        
+        .upload-btn:hover {
+            background: #1f2937;
+        }
+        
+        .upload-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .result {
+            margin-top: 24px;
+            padding: 16px;
+            border-radius: 8px;
+            display: none;
+            font-size: 13px;
+        }
+        
+        .result.success {
+            background: #f0fdf4;
+            border: 1px solid #86efac;
+        }
+        
+        .result.error {
+            background: #fef2f2;
+            border: 1px solid #fca5a5;
+        }
+        
+        .result-title {
+            font-weight: 500;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+        
+        .result.success .result-title {
+            color: #166534;
+        }
+        
+        .result.error .result-title {
+            color: #b41919;
+        }
+        
+        .result-url {
+            word-break: break-all;
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 8px;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .result-url a {
+            color: #111827;
+            text-decoration: none;
+        }
+        
+        .result-url a:hover {
+            text-decoration: underline;
+        }
+        
+        .progress {
+            margin-top: 24px;
+            display: none;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #111827;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .error-message {
+            color: #991b1b;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="upload-container">
+        <h1>文件上传</h1>
+        
+        <div style="margin-bottom: 24px; padding: 12px; background: #f3f4f6; border-radius: 6px; font-size: 12px; color: #6b7280; text-align: center; line-height: 1.6;">
+            ⚠️ 本程序仅用于学习交流，请勿上传违法违规内容。<br>
+            💡 上传时会自动删除文件后缀,防止403拦截
+        </div>
+        
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">↑</div>
+            <div class="upload-text">点击或拖拽文件</div>
+        </div>
+        
+        <div id="sizeWarning" style="display: none; margin-top: 12px; padding: 12px; background: #fef3c7; border: 1px solid #fbbf24; border-radius: 6px; font-size: 13px; color: #92400e;">
+            ⚠️ 文件超过 3MB，可能上传失败
+        </div>
+        
+        <input type="file" id="fileInput">
+        
+        <div class="file-info" id="fileInfo">
+            <div class="file-name" id="fileName"></div>
+            <div class="file-size" id="fileSize"></div>
+        </div>
+        
+        <div class="input-group" id="contentTypeSelector">
+            <label for="contentType">Content-Type</label>
+            <select id="contentType">
+                <option value="auto">自动检测</option>
+                <option value="image/jpeg">image/jpeg</option>
+                <option value="image/png">image/png</option>
+                <option value="image/gif">image/gif</option>
+                <option value="image/webp">image/webp</option>
+                <option value="video/mp4">video/mp4</option>
+                <option value="audio/mpeg">audio/mpeg</option>
+                <option value="application/pdf">application/pdf</option>
+                <option value="text/plain">text/plain</option>
+                <option value="text/html">text/html</option>
+                <option value="text/css">text/css</option>
+                <option value="application/javascript">application/javascript</option>
+                <option value="application/json">application/json</option>
+                <option value="application/zip">application/zip</option>
+            </select>
+        </div>
+        
+        <div class="input-group" id="customPathSelector">
+            <label for="customPath">文件名</label>
+            <input type="text" id="customPath" placeholder="留空使用时间戳">
+        </div>
+        
+        <button class="upload-btn" id="uploadBtn">上传</button>
+        
+        <div class="progress" id="progress">
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+        </div>
+        
+        <div class="result" id="result"></div>
+    </div>
+    
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const contentTypeSelector = document.getElementById('contentTypeSelector');
+        const contentType = document.getElementById('contentType');
+        const customPathSelector = document.getElementById('customPathSelector');
+        const customPath = document.getElementById('customPath');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const progress = document.getElementById('progress');
+        const result = document.getElementById('result');
+        
+        let selectedFile = null;
+        const MAX_FILE_SIZE = 3 * 1024 * 1024;
+        
+        uploadArea.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#9ca3af';
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = '#d1d5db';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#d1d5db';
+            handleFile(e.dataTransfer.files[0]);
+        });
+        
+        function handleFile(file) {
+            if (!file) return;
+            
+            const sizeWarning = document.getElementById('sizeWarning');
+            
+            // 显示警告但不阻止上传
+            if (file.size > MAX_FILE_SIZE) {
+                sizeWarning.style.display = 'block';
+            } else {
+                sizeWarning.style.display = 'none';
+            }
+            
+            selectedFile = file;
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            fileInfo.style.display = 'block';
+            contentTypeSelector.style.display = 'block';
+            customPathSelector.style.display = 'block';
+            uploadBtn.style.display = 'block';
+            result.style.display = 'none';
+            
+            autoSelectContentType(file.name);
+        }
+        
+        function autoSelectContentType(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const typeMap = {
+                'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png',
+                'gif': 'image/gif', 'webp': 'image/webp', 'mp4': 'video/mp4',
+                'mp3': 'audio/mpeg', 'pdf': 'application/pdf', 'txt': 'text/plain',
+                'html': 'text/html', 'css': 'text/css', 'js': 'application/javascript',
+                'json': 'application/json', 'zip': 'application/zip'
+            };
+            contentType.value = typeMap[ext] || 'auto';
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i];
+        }
+        
+        uploadBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+            
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = '上传中...';
+            progress.style.display = 'block';
+            result.style.display = 'none';
+            
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            
+            const selectedContentType = contentType.value;
+            if (selectedContentType !== 'auto') {
+                formData.append('content_type', selectedContentType);
+            }
+            
+            const customFileName = customPath.value.trim();
+            if (customFileName) {
+                formData.append('custom_filename', customFileName);
+            }
+            
+            try {
+                const response = await fetch('https://i.elaina.vin/api/%E4%B8%8A%E4%BC%A0/upload.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                progress.style.display = 'none';
+                result.style.display = 'block';
+                
+                if (data.success) {
+                    result.className = 'result success';
+                    result.innerHTML = `
+                        <div class="result-title">上传成功</div>
+                        <div class="result-url">
+                            <a href="${data.cdnUrl}" target="_blank">${data.cdnUrl}</a>
+                        </div>
+                        <div class="result-url" style="margin-top: 8px;">
+                            <a href="${data.url}" target="_blank">${data.url}</a>
+                        </div>
+                    `;
+                } else {
+                    result.className = 'result error';
+                    result.innerHTML = `
+                        <div class="result-title">上传失败</div>
+                        <div class="error-message">${data.message || '未知错误'}</div>
+                    `;
+                }
+            } catch (error) {
+                progress.style.display = 'none';
+                result.style.display = 'block';
+                result.className = 'result error';
+                result.innerHTML = `
+                    <div class="result-title">上传失败</div>
+                    <div class="error-message">网络错误: ${error.message}</div>
+                `;
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = '上传';
+            }
+        });
+    </script>
+</body>
+</html>
